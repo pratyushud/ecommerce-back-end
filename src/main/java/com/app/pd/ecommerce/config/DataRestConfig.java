@@ -1,7 +1,9 @@
 package com.app.pd.ecommerce.config;
 
+import com.app.pd.ecommerce.entity.Country;
 import com.app.pd.ecommerce.entity.Product;
 import com.app.pd.ecommerce.entity.ProductCategory;
+import com.app.pd.ecommerce.entity.State;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,14 @@ public class DataRestConfig implements RepositoryRestConfigurer {
                 .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
 
         config.getExposureConfiguration().forDomainType(ProductCategory.class)
+                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
+                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
+
+        config.getExposureConfiguration().forDomainType(Country.class)
+                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
+                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
+
+        config.getExposureConfiguration().forDomainType(State.class)
                 .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
                 .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
 
