@@ -6,7 +6,9 @@ import com.app.pd.ecommerce.entity.ProductCategory;
 import com.app.pd.ecommerce.entity.State;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
+import org.hibernate.query.Order;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -20,7 +22,10 @@ import java.util.Set;
 @Configuration
 public class DataRestConfig implements RepositoryRestConfigurer {
 
-    private EntityManager entityManager;
+    @Value("${allowed.origins}")
+    private String[] allowedOrigins;
+
+    private final EntityManager entityManager;
 
     @Autowired
     public DataRestConfig(EntityManager entityManager) {
@@ -29,24 +34,16 @@ public class DataRestConfig implements RepositoryRestConfigurer {
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
-        HttpMethod[] unSupportedMethods = { HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE };
-        config.getExposureConfiguration().forDomainType(Product.class)
-                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
-                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
+        HttpMethod[] unSupportedMethods = { HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH };
 
-        config.getExposureConfiguration().forDomainType(ProductCategory.class)
-                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
-                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
-
-        config.getExposureConfiguration().forDomainType(Country.class)
-                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
-                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
-
-        config.getExposureConfiguration().forDomainType(State.class)
-                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
-                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
+        disableHttpMethods(config, unSupportedMethods, Product.class);
+        disableHttpMethods(config, unSupportedMethods, ProductCategory.class);
+        disableHttpMethods(config, unSupportedMethods, Country.class);
+        disableHttpMethods(config, unSupportedMethods, State.class);
+        disableHttpMethods(config, unSupportedMethods, Order.class);
 
         exposeIds(config);
+        cors.addMapping(config.getBasePath() + "/**").allowedOrigins(this.allowedOrigins);
     }
 
     private void exposeIds(RepositoryRestConfiguration config) {
@@ -57,5 +54,11 @@ public class DataRestConfig implements RepositoryRestConfigurer {
         }
         Class[] domainTypes = entityClasses.toArray(new Class[0]);
         config.exposeIdsFor(domainTypes);
+    }
+
+    private void disableHttpMethods(RepositoryRestConfiguration config, HttpMethod[] unSupportedMethods, Class entityClass) {
+        config.getExposureConfiguration().forDomainType(entityClass)
+                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(unSupportedMethods))
+                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable((unSupportedMethods)));
     }
 }

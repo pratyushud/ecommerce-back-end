@@ -4,4 +4,5 @@ import com.app.pd.ecommerce.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CustomerDAO extends JpaRepository<Customer, Long> {
+    public Customer findByEmail(String emailId);
 }
